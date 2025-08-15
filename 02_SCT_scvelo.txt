@@ -1,0 +1,156 @@
+import os
+import pandas as pd 
+import scvelo as scv
+import scanpy as sc
+import loompy
+import numpy as np
+
+
+
+## Set parameters
+scv.settings.verbosity = 3  
+scv.settings.presenter_view = True  
+scv.set_figure_params('scvelo', color_map='Dark2')  
+
+
+
+################
+## Preprocess datasets
+################
+
+
+## Combine and normalize spliced+unspliced datasets
+# import loom objects for spliced+unspliced transcriptomes for each dataset
+files=['02_scVelo/Datasets/DKO.loom','02_scVelo/Datasets/GTC.loom','02_scVelo/Datasets/NR4A1.loom','02_scVelo/Datasets/SOCS3.loom']
+
+# combine each dataset into one loompy file
+loompy.combine(files, key="Accession", output_file='02_scVelo/Datasets/combined.loom')
+
+# Import combined loom and normalize data
+ldata = sc.read('02_scVelo/Datasets/combined.loom', cache=True)
+scv.pp.filter_and_normalize(ldata, log = True)
+
+
+
+## Add data from processed Seurat Object 
+# Import loom from Seurat object
+adata = sc.read('02_scVelo/Datasets/so_proc2_namechange.loom')
+
+# Add dimensional reduction info
+adata.obsm['X_umap'] = np.loadtxt('02_scVelo/Datasets/umap_embedding.dat',delimiter='\t',skiprows=1)
+adata.obsm['X_inmf'] = np.loadtxt('02_scVelo/Datasets/nmf_embedding.dat',delimiter='\t',skiprows=1)
+
+# Add splicing data to processed Seurat dataset
+adata = scv.utils.merge(adata, ldata)
+
+
+
+## Filter genes
+scv.pp.filter_genes(adata, min_shared_cells= 100)
+
+
+
+################
+## RNA velocity analysis
+################
+
+## Prepare data for velocity analysis
+# Calculate neighborhood graph and moments
+scv.pp.neighbors(adata, random_state=100, n_neighbors=20)
+scv.pp.moments(adata, n_neighbors= 20)
+
+# Recover splicing dynamics
+scv.tl.recover_dynamics(adata, n_jobs = 20)
+
+
+
+## Analyze velocity
+# Compute velocity with dynamical modeling, while accounting for cell subsets
+scv.tl.velocity(adata, mode='dynamical', groupby='groups', use_latent_time=True, n_jobs = 20)
+
+# Calculate RNA velocity graph and project single-cell velocities into UMAP
+scv.tl.velocity_graph(adata, n_jobs = 20)
+scv.tl.velocity_embedding(adata, basis='umap')
+
+# Calculate speed and coherency of velocity 
+scv.tl.velocity_confidence(adata)
+
+# Determine terminal states and calculate single-cell self-transitions
+scv.tl.terminal_states(adata, self_transitions=True) 
+
+
+
+## Estimate pseudotime and latent time
+# Calculate pseudotime from velocity graph
+scv.tl.velocity_pseudotime(adata, save_diffmap = True)
+
+# Calculate latent time
+scv.tl.latent_time(adata)
+
+
+
+################
+## Differential kinetics analysis
+################
+
+## Differential kinetics
+top_genes = adata.var['fit_likelihood'].sort_values(ascending=False).index[:100]
+scv.tl.differential_kinetic_test(adata, var_names=top_genes, groupby='groups')
+
+
+
+################
+## Plot analysis results
+################
+
+## Plot velocity_self_transition, Pseudotime, and Latent time on UMAP embeddings 
+scv.pl.velocity_embedding_stream(adata, basis='umap', color = 'velocity_pseudotime', color_map='gnuplot', show = False, dpi = 300, figsize = (5, 3.6), save = '02_scVelo/Figures/04a_stream_Velo_v2.3.png')
+scv.pl.velocity_embedding_stream(adata, basis='umap', color = 'latent_time', color_map='gnuplot', show = False, dpi = 300, figsize = (5, 3.6), save = '02_scVelo/Figures/04b_stream_LatentTime_v2.3.png')
+scv.pl.velocity_embedding_stream(adata, basis='umap', color = 'velocity_self_transition', color_map='gnuplot', show = False, dpi = 300, figsize = (5, 3.6), save = '02_scVelo/Figures/04b_stream_velo-self_v2.3.png')
+
+
+
+## Plot velocity speed and coherence
+scv.pl.scatter(adata, color='velocity_length', cmap='coolwarm', perc=[5, 95],show = False, dpi = 300,figsize = (5, 3.6),  save = '02_scVelo/Figures/04d_velocitySpeed_v2.3.png')
+scv.pl.scatter(adata, color='velocity_confidence', cmap='coolwarm', perc=[5, 95],show = False, dpi = 300,figsize = (5, 3.6),  save = '02_scVelo/Figures/04d_velocityConfidence_v2.3.png')
+
+
+
+## Plot root and end points of trajectory
+scv.pl.scatter(adata, color='root_cells', cmap='coolwarm', perc=[5, 95], show = False, dpi = 300, figsize = (5, 3.6), save = '02_scVelo/Figures/04c_rootPts_v2.3.png')
+scv.pl.scatter(adata, color='end_points', cmap='coolwarm', perc=[5, 95], show = False, dpi = 300, figsize = (5, 3.6), save = '02_scVelo/Figures/04c_endPts_v2.3.png')
+
+
+
+## Plot splicing kinetics of top genes
+# List top genes from differential kinetics analysis
+top_genes=["SH3BGRL3","HMGN2","RRM2","HMGB2","HSPA8","COX6A1","ALOX5AP","DIAPH3","NUSAP1","HCST","NKG7","PPDPF"]
+
+# Make scatter plot, color-coding the cell subsets
+colors=['#EFC000FF', '#0072B5FF', '#E18727FF', '#BC3C29FF', '#868686FF']
+kwargs = dict(linewidth=3, add_polyfit=False, palette=colors, sort_order=False, xlabel='', ylabel='')
+scv.pl.scatter(adata, basis=top_genes, ncols=4, color='groups', **kwargs, show = True, dpi = 750, save = '02_scVelo/Figures/scVelo_dk_topgenes_v1.0.png')
+
+# Make scatter plot, color-coding the genotypes
+colors=['#D85446','#B2B2B2','#496AB4','#E9AC4C']
+kwargs = dict(linewidth=3, add_linfit=False, palette=colors, sort_order=False, xlabel='', ylabel='')
+scv.pl.scatter(adata, basis=top_genes, ncols=4, color='groups', **kwargs, show = True, dpi = 750, save = '02_scVelo/Figures/scVelo_dk_topgenes_byGenotype_v1.0.png')
+
+
+
+################
+## Export data
+################
+
+## Export data
+pd.DataFrame(adata.obs).to_csv('02_scVelo/Data/04_scvelo_obs_v2.3.txt', sep='\t')
+pd.DataFrame(adata.var).to_csv('02_scVelo/Data/04_scvelo_var_v2.3.txt', sep='\t')
+
+
+
+## Save adata
+adata=sc.read('02_scVelo/Datasets/dkot_scvelo_analysis_v2.3.h5ad')
+
+
+
+
