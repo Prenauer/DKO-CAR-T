@@ -8,7 +8,7 @@ signatures, (3) generates single-cell signatures of select phenotypes, and
 (4) generates plots for all of these analyses."
 output: html_document
 ---
-```{r include = FALSE}
+```{r include = FALSE, echo=F}
 knitr::opts_chunk$set(message = F, eval=F)
 ```
 
