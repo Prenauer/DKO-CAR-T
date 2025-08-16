@@ -31,7 +31,7 @@ There are no demo datasets provided for the code in this repository. Instead, th
 ## 4. Instructions
 Copy the GitHub repository.
 ```
-git clone https://github.com/Prenauer/2024_DKOT
+git clone https://github.com/Prenauer/DKO-CAR-T
 ```
 Download the processed data from GEO using the following links:
 ```
