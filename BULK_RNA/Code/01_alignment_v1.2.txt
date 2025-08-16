@@ -1,0 +1,39 @@
+#!/bin/bash
+
+
+## Set directories
+DIR=/dko_rna
+REF_STAR=/reference/GRCh38.gencode.v44.150bp.reference
+
+
+## Set script to unzip and get QC info
+for FQ0 in *fastq.gz
+do
+FQ1=$( basename ${FQ0} | sed 's/.gz//g' )
+SCRIPT01_UNZIP=$( echo "module load pigz; pigz -p20 -d ${DIR}/fastq/${FQ0}; " )
+SCRIPT02_QC=$( echo "module load FastQC; fastqc ${DIR}/fastq/${FQ1}; " )
+echo "${SCRIPT01_UNZIP} ${SCRIPT02_QC}" >> dkotrna_preproc01a_scriptlist_v1.txt
+done
+module load dSQ; dsq --job-file dkotrna_preproc01a_scriptlist_v1.txt -p scavenge -c 20 --mail-type=ALL 
+
+
+
+## Set script to trim and align reads
+for PREFIX in $( ls *fastq | cut -d'_' -f1-4 | uniq )
+do 
+FQ1_PAIR=$( echo "$(ls ${DIR}/fastq/${PREFIX}*R1*.fastq) $(ls ${DIR}/fastq/${PREFIX}*R2*.fastq)" )
+FQ2_1=${DIR}/fastq/${PREFIX}_trim_R1.fastq
+FQ2_2=${DIR}/fastq/${PREFIX}_trim_R2.fastq
+TRIM_LOG=${DIR}/fastq/${PREFIX}_trim.log
+ALIGN_KALLISTO=${DIR}/kallisto/${PREFIX}
+ALIGN_LOG=${DIR}/${PREFIX}_align.log
+SCRIPT03_TRIM=$( echo "module load cutadapt; cutadapt -j0 --pair-filter=any -m20 -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT -o ${FQ2_1} -p ${FQ2_2} ${FQ1_PAIR} &> ${TRIM_LOG} ;" )
+SCRIPT04_ALIGN=$( echo "module load kallisto; kallisto quant -i ${REF_KALLISTO} -o ${ALIGN_KALLISTO} -b 100 -t 20 --seed=42 ${FQ2_1} ${FQ2_2} 1> ${ALIGN_LOG} ;" )
+echo "${SCRIPT03_TRIM} ${SCRIPT04_ALIGN}" >> dkotrna_preproc01b_scriptlist_v1.txt
+done
+module load dSQ; dsq --job-file dkotrna_preproc01b_scriptlist_v1.txt -p scavenge -c 20 -t 3:00:00 --mail-type=ALL 
+
+
+
+
+
