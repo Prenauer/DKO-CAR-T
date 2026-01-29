@@ -1,5 +1,5 @@
----
-title: "LEPP: low gene expression as a predictor of T cell phenotype"
+## LEPP: low gene expression as a predictor of T cell phenotype
+```{r }
 author: "Paul Renauer"
 date: "2025-08-14"
 description: "This uses public single-cell RNA-seq data, curated from the 
@@ -7,11 +7,6 @@ ProjecTILs tumor-infiltrating T lymphocytes database to assess whether the
 double-low expression of target genes is a better predictor of T cell function  
 than single-low expression of these genes, using gene module scores to 
 represent T cell phenotypes."
-output: html_document
----
-
-```{r include = FALSE}
-knitr::opts_chunk$set(message = F, eval=F)
 ```
 
 ## Script contents
