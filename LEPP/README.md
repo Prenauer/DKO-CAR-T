@@ -1,20 +1,18 @@
----
-title: "LEPP: low gene expression as a predictor of T cell phenotype"
-author: "Paul Renauer"
-date: "2025-08-14"
-description: "This uses public single-cell RNA-seq data, curated from the 
+## LEPP: low gene expression as a predictor of T cell phenotype
+
+Author: Paul Renauer
+
+Date: 2026-01-14
+
+Description: 
+This uses public single-cell RNA-seq data, curated from the 
 ProjecTILs tumor-infiltrating T lymphocytes database to assess whether the 
 double-low expression of target genes is a better predictor of T cell function  
 than single-low expression of these genes, using gene module scores to 
-represent T cell phenotypes."
-output: html_document
----
+represent T cell phenotypes.
+##
 
-```{r include = FALSE}
-knitr::opts_chunk$set(message = F, eval=F)
-```
-
-## Script contents
+### Script contents
 
 ```{r }
 ###############################################################################
@@ -34,7 +32,7 @@ knitr::opts_chunk$set(message = F, eval=F)
 
 ```
 
-## Load packages
+### Load packages
 
 ```{r setup, message=FALSE, warning=FALSE}
 # Load all required packages quietly
@@ -152,7 +150,7 @@ colnames(ucell_scores) <- c("Cytotoxicity","IFN","Proliferation",
 phenos <- colnames(ucell_scores)
 ```
 
-## Assemble analysis table
+### Assemble analysis table
 
 ```{r table}
 # Construct analysis data frame combining expression, phenotypes, and metadata
@@ -166,7 +164,7 @@ analysis_df <- data.frame(
 )
 ```
 
-## Run LEPP analysis
+### Run LEPP analysis
 
 ```{r analysis}
 # Set seed for reproducibility
@@ -194,7 +192,7 @@ lepp_results <- bind_rows(lapply(phenos, function(ph) {
 }))
 ```
 
-## Save analysis results
+### Save analysis results
 
 ```{r save-results}
 # Write LEPP results to disk
@@ -203,7 +201,7 @@ write.table(lepp_results,
             sep = "\t", quote = FALSE, row.names = FALSE )
 ```
 
-## Figure: Gene dominance (pair vs best single)
+### Figure: Gene dominance (pair vs best single)
 
 ```{r gene-dominance}
 # Subset to pair-vs-single tests
@@ -243,7 +241,7 @@ ggsave(plot = p,
        height = 3, width = 6, scale = 1.5)
 ```
 
-## Figure: Single vs paired low-expression effects
+### Figure: Single vs paired low-expression effects
 
 ```{r dotplot}
 # Create identifier for single and paired tests
