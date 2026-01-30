@@ -9,20 +9,80 @@ This code requires R version 4.2 or higher, and python code was written and test
 
 ## 2. Installation guide
 Installation should take less than 30 minutes.
-### R package installation
-```{r}
-install.packages(c('renv','BiocManager','remotes','devtools','dplyr',
-'stringr','patchwork','reshape2','factoextra','RColorBrewer','pheatmap',
-'leidenbase'))
-BiocManager::install(c('edgeR','zellkonverter','rhdf5','decoupleR','glmGamPoi'))
-remotes::install_github("satijalab/seurat", "seurat5", quiet = TRUE)
-remotes::install_github("satijalab/seurat-wrappers", "seurat5", quiet = TRUE)
-```
-#Note: install all dependent and suggested packages for seurat
 
 ### Python package installation
 ```{python}
-pip install -U pandas scvelo igraph louvain pybind11 hnswlib
+conda create -n scvelo python=3.9
+conda activate scvelo
+pip install -U pandas anndata loompy scanpy scvelo igraph louvain pybind11 hnswlib
+```
+
+### R package installation
+```{r}
+# Install core package managers
+install.packages(c(
+  "renv",        # Reproducible environments
+  "BiocManager", # Bioconductor installer
+  "remotes",     # GitHub installs
+  "devtools"     # Development utilities
+))
+
+# Install CRAN packages
+install.packages(c(
+  # Data structures and manipulation
+  "Matrix", "dplyr", "data.table", "readr", "stringr", "reshape2",
+  
+  # Visualization and figure assembly
+  "ggplot2", "cowplot", "patchwork", "ggrepel", "ggforce",
+  "ggrastr", "pheatmap", "aplot", "ggdendroplot",
+  "ggvenn", "ggVennDiagram",
+  
+  # Color palettes and scales
+  "RColorBrewer", "paletteer", "MexBrewer", "scales",
+  
+  # Graphs and networks
+  "igraph", "ggraph", "ggnetwork",
+  
+  # Statistical modeling
+  "mgcv", "pcaPP",
+  
+  # Parallelization
+  "future", "future.apply", "progressr",
+  
+  # Python interoperability
+  "reticulate"
+))
+
+# Install Bioconductor packages
+BiocManager::install(c(
+  # Differential expression and normalization
+  "edgeR", "DESeq2",
+  
+  # Single-cell infrastructure
+  "Seurat", "SeuratDisk",
+  
+  # Signature and pathway scoring
+  "SignatuR", "UCell", "AUCell", "escape", "fgsea",
+  
+  # Mixed models and tidy output
+  "glmmTMB", "broom.mixed",
+  
+  # Trajectory and annotation
+  "monocle3", "rtracklayer",
+  
+  # Parallel backends
+  "BiocParallel"
+))
+
+# Install GitHub packages
+# Note: install all dependent and suggested packages for seurat
+remotes::install_github("satijalab/seurat", ref = "seurat5", quiet = TRUE)
+remotes::install_github("satijalab/seurat-wrappers", ref = "seurat5", quiet = TRUE)
+
+# Note: RNA velocity analyses were performed using scVelo (Python), accessed via reticulate.
+# Install the python packages first, then install the R package below
+reticulate::use_condaenv("scvelo", required = TRUE)
+
 ```
 
 ## 3. Demo
