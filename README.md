@@ -5,7 +5,7 @@
 ### Hardware requirements
 This code is requires only a standard computer with at least 8Gb of RAM to support typical single-cell RNA seq analyses.
 ### Software requirements
-This code requires R version 4.2 or higher, and python code was written and tested with version 3.8.5. 
+This code requires R version 4.2 or higher, and python code was written and tested with version 3.9. 
 
 ## 2. Installation guide
 Installation should take less than 30 minutes.
@@ -88,6 +88,10 @@ reticulate::use_condaenv("scvelo", required = TRUE)
 ## 3. Demo
 There are no demo datasets provided for the code in this repository. Instead, the raw data can be downloaded and analyzed using the instructions in the following section. 
 
+The output is expected to be contextually identical to that in the publication; However, the published version of the output tables and figures were slightly modified for presentation purposes, without altering scientific accuracy. 
+
+The expected runtime of data alignment and pre-processing scripts is less than 30 hours, while the expected runtype of all subsequent R and Python scripts is less than 5 hours.
+
 ## 4. Instructions
 Copy the GitHub repository.
 ```
@@ -100,7 +104,8 @@ wget -xP BULK_RNA/Data XXXX
 wget -xP CRISPR_SCREEN/Data XXXX
 ```
 
-
+### Reproducibility instructions 
+Whenever possible, the code was written with seed values for reproducibility, yet there are some instances where "perfect reproducibility" could not be guaranteed. 
 
 
 
