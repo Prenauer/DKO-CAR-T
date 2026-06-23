@@ -97,7 +97,7 @@ Copy the GitHub repository.
 ```
 git clone https://github.com/Prenauer/DKO-CAR-T
 ```
-Download the processed data from GEO using the following accession numbers:
+Download the processed data from GEO using the following accession numbers: GSE272887 and GSE335215.
 
 ### Reproducibility instructions 
 Whenever possible, the code was written with seed values for reproducibility, yet there are some instances where "perfect reproducibility" could not be guaranteed. 
