@@ -97,12 +97,7 @@ Copy the GitHub repository.
 ```
 git clone https://github.com/Prenauer/DKO-CAR-T
 ```
-Download the processed data from GEO using the following links:
-```
-## Enter the following commands from the root directory of the GitHub repository.
-wget -xP BULK_RNA/Data XXXX
-wget -xP CRISPR_SCREEN/Data XXXX
-```
+Download the processed data from GEO using the following accession numbers:
 
 ### Reproducibility instructions 
 Whenever possible, the code was written with seed values for reproducibility, yet there are some instances where "perfect reproducibility" could not be guaranteed. 
